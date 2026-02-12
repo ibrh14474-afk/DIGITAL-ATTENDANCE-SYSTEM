@@ -1,0 +1,2 @@
+# DIGITAL-ATTENDANCE-SYSTEM
+Digital Attendance System - EEE227 MID SEM
