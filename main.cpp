@@ -5,99 +5,98 @@
 
 using namespace std;
 
-// Global vectors
-vector<Student> students;
-vector<AttendanceSession> sessions;
-
-// ================= STUDENT FUNCTIONS =================
-
-void registerStudent() {
-    string name, index;
-
-    cout << "Enter student name: ";
-    cin.ignore();
-    getline(cin, name);
-
-    cout << "Enter index number: ";
-    getline(cin, index);
-
-    students.push_back(Student(name, index));
-    cout << "Student registered successfully!" << endl;
-}
-
-void viewStudents() {
-    if (students.empty()) {
-        cout << "No students registered yet." << endl;
-        return;
-    }
-
-    for (int i = 0; i < students.size(); i++) {
-        cout << i + 1 << ". ";
-        students[i].display();
-    }
-}
-
-// ================= SESSION FUNCTIONS =================
-
-void createSession() {
-    string course, date, time;
-    int duration;
-
-    cout << "Enter course code: ";
-    cin >> course;
-
-    cout << "Enter date (YYYY-MM-DD): ";
-    cin >> date;
-
-    cout << "Enter start time: ";
-    cin >> time;
-
-    cout << "Enter duration (minutes): ";
-    cin >> duration;
-
-    sessions.push_back(
-        AttendanceSession(course, date, time, duration)
-    );
-
-    cout << "Session created successfully!" << endl;
-}
-
-void viewSessions() {
-    if (sessions.empty()) {
-        cout << "No sessions created yet." << endl;
-        return;
-    }
-
-    for (int i = 0; i < sessions.size(); i++) {
-        cout << "\nSession " << i + 1 << endl;
-        sessions[i].displaySession();
-    }
-}
-
-// ================= MAIN MENU =================
-
 int main() {
+    vector<Student> students;
+
+    // Load students from file at startup
+    Student::loadFromFile(students);
+
     int choice;
 
     do {
-        cout << "\n==============================" << endl;
-        cout << " DIGITAL ATTENDANCE SYSTEM " << endl;
-        cout << "==============================" << endl;
-        cout << "1. Register Student" << endl;
-        cout << "2. View Students" << endl;
-        cout << "3. Create Attendance Session" << endl;
-        cout << "4. View Sessions" << endl;
-        cout << "0. Exit" << endl;
+        cout << "\n===== DIGITAL ATTENDANCE SYSTEM =====\n";
+        cout << "1. Register Student\n";
+        cout << "2. View All Students\n";
+        cout << "3. Search Student by Index Number\n";
+        cout << "4. Create Attendance Session\n";
+        cout << "0. Exit\n";
         cout << "Enter choice: ";
         cin >> choice;
 
-        switch (choice) {
-            case 1: registerStudent(); break;
-            case 2: viewStudents(); break;
-            case 3: createSession(); break;
-            case 4: viewSessions(); break;
-            case 0: cout << "Exiting system..." << endl; break;
-            default: cout << "Invalid choice!" << endl;
+        if (choice == 1) {
+            string name, index;
+
+            cout << "Enter Student Name: ";
+            cin.ignore();
+            getline(cin, name);
+
+            cout << "Enter Index Number: ";
+            cin >> index;
+
+            students.push_back(Student(name, index));
+            Student::saveToFile(students);
+
+            cout << "Student registered successfully.\n";
+        }
+
+        else if (choice == 2) {
+            if (students.empty()) {
+                cout << "No students registered yet.\n";
+            } else {
+                cout << "\nRegistered Students:\n";
+                for (const auto& s : students) {
+                    s.display();
+                }
+            }
+        }
+
+        else if (choice == 3) {
+            string searchIndex;
+            bool found = false;
+
+            cout << "Enter Index Number to search: ";
+            cin >> searchIndex;
+
+            for (const auto& s : students) {
+                if (s.getIndexNumber() == searchIndex) {
+                    s.display();
+                    found = true;
+                    break;
+                }
+            }
+
+            if (!found) {
+                cout << "Student not found.\n";
+            }
+        }
+
+        else if (choice == 4) {
+            if (students.empty()) {
+                cout << "No students available. Register students first.\n";
+            } else {
+                AttendanceSession session;
+                session.createSession();
+
+                vector<string> indexes;
+                for (const auto& s : students) {
+                    indexes.push_back(s.getIndexNumber());
+                }
+
+                session.markAttendance(indexes);
+                session.displayAttendance();
+                session.displaySummary();
+                session.saveToFile();
+
+                cout << "Attendance session saved successfully.\n";
+            }
+        }
+
+        else if (choice == 0) {
+            cout << "Exiting system. Goodbye!\n";
+        }
+
+        else {
+            cout << "Invalid choice. Try again.\n";
         }
 
     } while (choice != 0);
