@@ -3,40 +3,88 @@
 
 #include <iostream>
 #include <string>
-#include <map>
+#include <vector>
+#include <fstream>
 
 using namespace std;
 
 class AttendanceSession {
-public:
-    // Week 2 (unchanged)
+private:
     string courseCode;
     string date;
     string startTime;
-    int duration;
+    int duration; // in hours
 
+    vector<string> studentIndexes;
+    vector<char> attendanceStatus; // P, A, L
+
+public:
     AttendanceSession() {}
 
-    AttendanceSession(string c, string d, string t, int dur) {
-        courseCode = c;
-        date = d;
-        startTime = t;
-        duration = dur;
+    void createSession() {
+        cout << "Course Code: ";
+        cin >> courseCode;
+
+        cout << "Date (YYYY-MM-DD): ";
+        cin >> date;
+
+        cout << "Start Time (HH:MM): ";
+        cin >> startTime;
+
+        cout << "Duration (hours): ";
+        cin >> duration;
     }
 
-    void displaySession() {
-        cout << "Course Code: " << courseCode << endl;
-        cout << "Date: " << date << endl;
-        cout << "Start Time: " << startTime << endl;
-        cout << "Duration: " << duration << " minutes" << endl;
+    void markAttendance(const vector<string>& registeredIndexes) {
+        for (const auto& index : registeredIndexes) {
+            char status;
+            cout << "Student " << index << " (P/A/L): ";
+            cin >> status;
+
+            studentIndexes.push_back(index);
+            attendanceStatus.push_back(toupper(status));
+        }
     }
 
-    // 🔵 Week 3 additions (ONLY THESE)
-    map<string, string> attendance;
+    void displayAttendance() const {
+        cout << "\nAttendance List\n";
+        for (size_t i = 0; i < studentIndexes.size(); i++) {
+            cout << studentIndexes[i]
+                 << " - " << attendanceStatus[i] << endl;
+        }
+    }
 
-    void markAttendance(string indexNumber);
-    void displayAttendance();
-    void displayAttendanceSummary();
+    void displaySummary() const {
+        int present = 0, absent = 0, late = 0;
+
+        for (char s : attendanceStatus) {
+            if (s == 'P') present++;
+            else if (s == 'A') absent++;
+            else if (s == 'L') late++;
+        }
+
+        cout << "\nSummary\n";
+        cout << "Present: " << present << endl;
+        cout << "Absent: " << absent << endl;
+        cout << "Late: " << late << endl;
+    }
+
+    void saveToFile() const {
+        string filename = "session_" + courseCode + "_" + date + ".txt";
+        ofstream file(filename);
+
+        file << courseCode << endl;
+        file << date << endl;
+        file << startTime << endl;
+        file << duration << endl;
+
+        for (size_t i = 0; i < studentIndexes.size(); i++) {
+            file << studentIndexes[i]
+                 << "," << attendanceStatus[i] << endl;
+        }
+
+        file.close();
+    }
 };
 
 #endif
